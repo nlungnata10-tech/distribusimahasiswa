@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const mysql = require('mysql2/promise');
 const cfg = require('./config');
+const { createApi } = require('./api');
 
 const pool = mysql.createPool({
   host: cfg.DB_HOST,
@@ -15,6 +16,8 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 5,
 });
+
+const api = createApi(pool);
 
 const PRODI = [
   'Teknik Informatika',
@@ -299,6 +302,7 @@ function notFound(res) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   try {
+    if (await api(req, res, url)) return;
     if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/index.php')) {
       return await halamanUtama(req, res, url);
     }

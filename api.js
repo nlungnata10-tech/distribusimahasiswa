@@ -175,3 +175,43 @@ function createApi(pool) {
 }
 
 module.exports = { createApi };
+
+// ------------------------------------------------------------------
+// Dijalankan langsung: `node api.js` -> server API saja (tanpa halaman web)
+// ------------------------------------------------------------------
+if (require.main === module) {
+  const http = require('http');
+  const mysql = require('mysql2/promise');
+  const cfg = require('./config');
+
+  const pool = mysql.createPool({
+    host: cfg.DB_HOST,
+    port: cfg.DB_PORT,
+    database: cfg.DB_NAME,
+    user: cfg.DB_USER,
+    password: cfg.DB_PASS,
+    charset: 'utf8mb4',
+    connectTimeout: 5000,
+    waitForConnections: true,
+    connectionLimit: 5,
+  });
+  const handle = createApi(pool);
+
+  http
+    .createServer(async (req, res) => {
+      const url = new URL(req.url, 'http://localhost');
+      if (!(await handle(req, res, url))) {
+        json(res, 404, { success: false, message: 'Gunakan /api/mahasiswa' });
+      }
+    })
+    .listen(cfg.PORT, '0.0.0.0', async () => {
+      console.log(`API jalan di http://localhost:${cfg.PORT}/api/mahasiswa`);
+      console.log(`Database: ${cfg.DB_USER}@${cfg.DB_HOST}:${cfg.DB_PORT}/${cfg.DB_NAME}`);
+      try {
+        await pool.query('SELECT 1');
+        console.log('Koneksi database: OK');
+      } catch (err) {
+        console.error('Koneksi database GAGAL:', err.message);
+      }
+    });
+}

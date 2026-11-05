@@ -1,0 +1,12 @@
+{
+  "name": "tugas-vm-node",
+  "version": "1.0.0",
+  "description": "Data Mahasiswa - Node.js + MySQL (XAMPP)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  }
+}
